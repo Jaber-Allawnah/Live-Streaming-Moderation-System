@@ -40,7 +40,6 @@ object SimilarityProcessor {
       .add("text", StringType, true)
       .add("processed_text", StringType, true)
       .add("tokens_clean", ArrayType(StringType), true)
-      .add("timestamp", LongType, true)
 
     val kafkaDF = spark.readStream
       .format("kafka")
@@ -106,7 +105,7 @@ object SimilarityProcessor {
           val commentsFe = tf.transform(commentsWithId)
             .select(
               col("comment_id"), col("user_id"), col("username"),
-              col("text"), col("processed_text"), col("tokens_clean"), col("timestamp"),
+              col("text"), col("processed_text"), col("tokens_clean"),
               col("features")
             )
 
@@ -144,6 +143,8 @@ object SimilarityProcessor {
             .drop("tokens_clean")
             .drop("features")
             .drop("hashes")
+            .withColumn("createdAt", current_timestamp())
+            .withColumn("updatedAt", current_timestamp())
 
           result.write
             .format("mongodb")

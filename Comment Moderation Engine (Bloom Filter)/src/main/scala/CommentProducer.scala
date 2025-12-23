@@ -33,12 +33,10 @@ object CommentProducer {
           struct(
             col("user_id"),
             col("username"),
-            col("text"),
-            col("timestamp")
+            col("text")
           )
         ).alias("value")
       )
-    //--> Outputs a single column df (value) has json object as a string
 
     out.write
       .format("kafka")

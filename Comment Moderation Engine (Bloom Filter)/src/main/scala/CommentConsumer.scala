@@ -3,7 +3,7 @@ import org.apache.log4j.varia.NullAppender
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{col, from_json, lower, regexp_replace, struct, to_json, translate, trim}
 import org.apache.spark.sql.streaming.Trigger
-import org.apache.spark.sql.types.{LongType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
 object CommentConsumer {
   def main(args: Array[String]): Unit = {
@@ -40,8 +40,7 @@ object CommentConsumer {
     val schema = StructType(Seq(
       StructField("user_id", StringType, true),
       StructField("username", StringType, true),
-      StructField("text", StringType, true),
-      StructField("timestamp", LongType, true)
+      StructField("text", StringType, true)
     ))
 
     // Parse JSON
@@ -71,8 +70,7 @@ object CommentConsumer {
             col("user_id"),
             col("username"),
             col("text"),
-            col("processed_text"),
-            col("timestamp")
+            col("processed_text")
           )
         ).alias("value")
       )

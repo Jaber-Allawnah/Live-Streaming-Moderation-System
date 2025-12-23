@@ -40,7 +40,6 @@ object SimilarityProcessor {
       .add("username", StringType, true)
       .add("text", StringType, true)
       .add("processed_text", StringType, true)
-      .add("timestamp", LongType, true)
 
     val kafkaDF = spark.readStream
       .format("kafka")
@@ -91,7 +90,10 @@ object SimilarityProcessor {
               "status",
               when(mightBeBlocked(col("processed_text")), lit("Blocked"))
                 .otherwise(lit("Allowed"))
-            ).drop("processed_text")
+            )
+            .withColumn("createdAt", current_timestamp())
+            .withColumn("updatedAt", current_timestamp())
+            .drop("processed_text")
 
           result.write
             .format("mongodb")
