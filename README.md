@@ -1,217 +1,72 @@
-🚀 Real-Time Live Stream Chat Moderation System
+# Real-Time Live-Stream Chat Moderation System
 
-A scalable real-time chat moderation system built using modern big data streaming technologies.
-The system analyzes live chat messages, detects harmful content instantly, and provides moderators with a real-time dashboard to maintain safe online environments.
+A real-time chat moderation pipeline that ingests live-stream messages, flags harmful content, and surfaces it to moderators through a dashboard — built to explore the trade-off between similarity-based and exact-match content detection under streaming constraints.
 
-🎓 Course Project – Big Data / Streaming Systems
-📅 First Semester, 2025
+**Course project — Big Data / Streaming Systems, First Semester 2025**
+Team: Jaber Allawnah, Ibrahim Bileh, Sami Braik, Ibrahim Herzallah · Instructor: Dr. Hamed Abdelhaq
 
-👥 Team
+## My Contribution
 
-Jaber Allawnah
+I designed and implemented the **Kafka ingestion pipeline** and **both detection engines** — the LSH-based similarity detector and the Bloom Filter-based exact matcher — including the comparative evaluation of their accuracy/latency trade-offs described below. The backend API and the React moderator dashboard were built by teammates.
 
-Ibrahim Bileh
+## Problem
 
-Sami Braik
+Live-streaming platforms generate high volumes of real-time chat messages, a fraction of which contain hate speech, harassment, spam, or other abusive language. Manual moderation cannot keep pace with the speed and scale of live chat, motivating an automated, low-latency detection pipeline.
 
-Ibrahim Herzallah
+## Architecture
 
-Instructor: Dr. Hamed Abdelhaq
-
-📌 Project Motivation
-
-Live-streaming platforms generate massive volumes of real-time user messages.
-While this increases engagement, it also introduces serious challenges:
-
-Hate speech
-
-Harassment
-
-Spam
-
-Abusive or toxic language
-
-Manual moderation alone cannot keep up with the speed and scale of live chats.
-
-This project addresses the problem by designing and implementing a real-time streaming moderation pipeline that:
-
-Processes messages instantly
-
-Detects harmful content
-
-Assists moderators with live insights
-
-🧠 System Overview
-
-The project was implemented in two versions, each exploring a different trade-off between detection accuracy and performance.
-
-Core Architecture (Shared by Both Versions)
+```
 Live Chat → Kafka → Spark Structured Streaming → Detection Layer → MongoDB → React Dashboard
+```
 
-Key Components
+- **Apache Kafka** — high-throughput ingestion of incoming chat messages
+- **Spark Structured Streaming** — real-time text normalization and moderation logic
+- **Detection layer** — two alternative approaches, compared below
+- **MongoDB** — persistent storage for flagged messages and moderation logs
+- **React dashboard** — real-time view for moderators
 
-Apache Kafka
-High-throughput ingestion of live chat messages.
+## Detection Approaches
 
-Apache Spark Structured Streaming
-Real-time processing, text normalization, and moderation logic.
+Two independent detection strategies were implemented and compared, trading off detection flexibility against computational cost.
 
-Detection Layer
-Two alternative approaches (LSH vs Bloom Filter).
+### V1 — LSH-based similarity detection
 
-MongoDB
-Persistent storage for flagged messages and moderation logs.
+Messages are cleaned, tokenized, converted to vectors, and compared using Locality-Sensitive Hashing (LSH) to find approximate matches against known harmful content.
 
-React Dashboard
-Real-time visualization for moderators.
+- **Strengths:** catches spelling variations and deliberately obfuscated abusive messages
+- **Limitations:** higher computational cost; latency increases under heavy load
 
-🧪 Implementation Details
-🔹 Version 1 (V1): LSH-Based Similarity Detection
+### V2 — Bloom Filter–based exact matching
 
-This version uses Locality Sensitive Hashing (LSH) to detect messages that are similar to known harmful content.
+Moderators manually flag harmful messages, which are inserted into a Bloom Filter; incoming messages are then checked for membership in O(1) time.
 
-How it works:
+- **Strengths:** faster and more predictable runtime under continuous load
+- **Limitations:** exact-match only — cannot catch semantically similar or reworded messages
 
-Messages are cleaned and tokenized
+The efficiency gain from V2 over V1 was incremental rather than dramatic: the main benefit was more stable, predictable latency, not a large raw speed-up.
 
-Converted to vectors
+## Dashboard (moderator-facing)
 
-Compared using LSH to find approximate matches
+The React dashboard is designed to surface: total and blocked message counts, blocked-message percentage, allowed vs. blocked message views, recent activity (last hour), and the most recently blocked messages.
 
-Strengths
+## Challenges
 
-Detects spelling variations and obfuscation
+- **Detection quality vs. performance:** LSH gives better detection at higher computational cost; Bloom Filter is faster but exact-match only.
+- **Real-time constraints:** moderation decisions had to be made within milliseconds of message arrival.
+- **Kafka–Spark integration:** the most technically demanding part of the pipeline, requiring substantial debugging and self-directed learning.
 
-Handles intentionally modified abusive messages
+## Results
 
-Strong similarity-based moderation
+- Built and compared two working real-time detection strategies within the same streaming pipeline
+- Achieved low-latency message processing suitable for live-chat volumes
+- Integrated Kafka, Spark, MongoDB, and React into a single end-to-end system
 
-Limitations
+## Future Improvements
 
-Higher computational cost
+- Hybrid approach combining Bloom Filter speed with LSH-style similarity detection
+- ML-based toxicity classification
+- Multilingual moderation support
 
-Increased latency under heavy load
+## Tech Stack
 
-Performance drops during peak traffic
-
-🔹 Version 2 (V2): Bloom Filter–Based Exact Matching
-
-To improve efficiency, the second version replaces similarity detection with a Bloom Filter.
-
-How it works:
-
-Moderators manually flag harmful messages
-
-Flagged messages are inserted into a Bloom Filter
-
-Incoming messages are checked in O(1) time
-
-Observed Results
-
-Slightly faster processing than V1
-
-More stable and predictable runtime
-
-Lower latency under continuous load
-
-Limitations
-
-Detects exact matches only
-
-Cannot catch semantically similar or modified messages
-
-⚠️ Performance improvement was incremental, not dramatic — the main gain was efficiency and stability, not raw speed.
-
-📊 Dashboard Features (Planned / Template)
-
-The moderation UI is designed to display:
-
-Total messages count
-
-Blocked messages count
-
-Blocked messages percentage
-
-Allowed vs blocked message views
-
-Messages from the last 1 hour
-
-Latest 5 blocked messages
-
-Source of blocked messages
-
-🛠 Project Management
-
-Trello was used for task tracking and coordination
-
-Tasks were divided across:
-
-Backend & streaming
-
-Detection logic
-
-Frontend dashboard
-
-This helped the team work in parallel and maintain clear development stages.
-
-⚠️ Challenges Faced
-
-Performance vs Detection Quality
-
-LSH = better detection, higher cost
-
-Bloom Filter = faster, less flexible
-
-Strict Real-Time Constraints
-
-Decisions must be made within milliseconds
-
-User Obfuscation Techniques
-
-Misspellings and intentional bypass attempts
-
-Limited Backend Experience
-
-Kafka–Spark integration was the most challenging part
-
-Required extensive debugging and self-learning
-
-Despite this, the team successfully delivered a fully working real-time streaming pipeline.
-
-✅ Results & Outcomes
-
-Successfully built a real-time moderation pipeline
-
-Demonstrated two different detection strategies
-
-Achieved low-latency message processing
-
-Gave moderators direct control over blocked content
-
-Integrated Kafka, Spark, MongoDB, and React into one system
-
-Gained strong hands-on experience with distributed streaming systems
-
-🔮 Future Improvements
-
-Hybrid approach (fast Bloom Filter + similarity detection)
-
-ML-based toxicity classification
-
-Multilingual moderation support
-
-Advanced dashboard analytics
-
-Automated learning from moderator actions
-
-📢 Why This Project Matters
-
-This project demonstrates:
-
-Real-world big data streaming architecture
-
-Practical trade-offs between accuracy and performance
-
-End-to-end system design (backend → streaming → frontend)
-
-Strong learning outcomes in distributed systems
+Apache Kafka · Apache Spark Structured Streaming · Scala · MongoDB · Node.js / Express · React
